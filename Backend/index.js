@@ -8,7 +8,11 @@ connectDB();
 
 const app = express();
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://book-review-mzv4.onrender.com'], // Allow both local and deployed frontend
+  origin: [
+    'http://localhost:3000',
+    'https://book-review-application-aayin65xd-sneha-tidkes-projects.vercel.app',
+    'https://book-review-web-application.onrender.com'
+  ],
   credentials: true
 }));
 app.use(express.json());
