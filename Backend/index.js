@@ -7,14 +7,28 @@ dotenv.config();
 connectDB();
 
 const app = express();
+// CORS configuration
+app.use((req, res, next) => {
+  console.log(`Incoming ${req.method} request to ${req.path} from origin: ${req.headers.origin}`);
+  console.log('Headers:', req.headers);
+  next();
+});
+
+// Enable CORS for all routes
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://book-review-application-aayin65xd-sneha-tidkes-projects.vercel.app',
-    'https://book-review-web-application.onrender.com'
-  ],
-  credentials: true
+  origin: function (origin, callback) {
+    console.log('Origin:', origin);
+    // Allow all origins for now - we'll log them to see what's hitting us
+    callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar']
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 app.use(express.json());
 
 // Routes
