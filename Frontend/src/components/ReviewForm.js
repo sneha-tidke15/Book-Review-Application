@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../api/axiosInstance';
 
 const ReviewForm = ({ bookId }) => {
   const [rating, setRating] = useState(5);
@@ -9,14 +9,15 @@ const ReviewForm = ({ bookId }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(
-        `http://localhost:5000/api/books/${bookId}/reviews`,
+      await axiosInstance.post(
+        `/api/books/${bookId}/reviews`,
         { rating, comment },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert('Review submitted!');
       setRating(5);
       setComment('');
+      window.location.reload(); // Refresh to show the new review
     } catch (err) {
       console.error('Failed to submit review:', err);
       alert('Failed to submit review. Please try again.');

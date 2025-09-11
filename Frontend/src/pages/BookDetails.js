@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import axiosInstance from '../api/axiosInstance';
 import ReviewForm from '../components/ReviewForm';
 
 const BookDetails = () => {
@@ -9,7 +9,7 @@ const BookDetails = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/books/${id}`)
+    axiosInstance.get(`/api/books/${id}`)
       .then((res) => {
         setBook(res.data);
         setLoading(false);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../api/axiosInstance';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -13,11 +13,7 @@ const Profile = () => {
       return;
     }
 
-    axios.get('http://localhost:5000/api/users/profile', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    axiosInstance.get('/api/users/profile')
       .then((res) => setUser(res.data))
       .catch((err) => {
         console.error('Failed to fetch profile:', err);
