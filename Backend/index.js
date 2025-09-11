@@ -7,28 +7,30 @@ dotenv.config();
 connectDB();
 
 const app = express();
-// CORS configuration
-app.use((req, res, next) => {
-  console.log(`Incoming ${req.method} request to ${req.path} from origin: ${req.headers.origin}`);
-  console.log('Headers:', req.headers);
-  next();
-});
-
-// Enable CORS for all routes
-app.use(cors({
+// CORS configuration with logging
+const corsOptions = {
   origin: function (origin, callback) {
     console.log('Origin:', origin);
-    // Allow all origins for now - we'll log them to see what's hitting us
+    // Allow all origins for now
     callback(null, true);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar']
-}));
+  exposedHeaders: ['Content-Length']
+};
 
-// Handle preflight requests
-app.options('*', cors());
+// Apply CORS to all routes
+app.use(cors(corsOptions));
+
+// Handle preflight requests for all routes
+app.options('*', cors(corsOptions));
+
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`Incoming ${req.method} request to ${req.path} from origin: ${req.headers.origin}`);
+  next();
+});
 app.use(express.json());
 
 // Routes
