@@ -1,12 +1,51 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [animatingFavorites, setAnimatingFavorites] = useState({});
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
+
+  // Function to generate random gradient
+  const getRandomGradient = () => {
+    const colors = [
+      '#4CAF50', '#2196F3', '#9C27B0', '#FF9800', '#E91E63',
+      '#00BCD4', '#673AB7', '#FF5722', '#009688', '#3F51B5'
+    ];
+    const color1 = colors[Math.floor(Math.random() * colors.length)];
+    const color2 = colors[Math.floor(Math.random() * colors.length)];
+    return `${color1}, ${color2}`;
+  };
+
+  // Function to handle remove from favorites
+  const removeFromFavorites = async (bookId) => {
+    try {
+      setAnimatingFavorites(prev => ({ ...prev, [bookId]: true }));
+      
+      await axiosInstance.delete(`/api/users/favorites/${bookId}`, {
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        }
+      });
+      
+      // Update the user's favorites list
+      setUser(prev => ({
+        ...prev,
+        favorites: prev.favorites.filter(book => book._id !== bookId)
+      }));
+      
+    } catch (err) {
+      console.error('Failed to remove from favorites:', err);
+      alert('Failed to remove from favorites. Please try again.');
+    } finally {
+      setAnimatingFavorites(prev => ({ ...prev, [bookId]: false }));
+    }
+  };
 
   useEffect(() => {
     if (!token) {
@@ -155,20 +194,102 @@ const Profile = () => {
               ) : (
                 <div className="row g-3">
                   {user.favorites.map((book) => (
-                    <div key={book._id} className="col-md-6">
-                      <div className="card h-100 border-0 shadow-sm hover-shadow transition-all">
+                    <div key={book._id} className="col-md-6 col-lg-4 mb-4">
+                      <div className="card h-100 border-0 shadow-sm hover-shadow transition-all"
+                        style={{
+                          borderRadius: '12px',
+                          overflow: 'hidden',
+                          transition: 'all 0.3s ease',
+                          border: '1px solid rgba(0,0,0,0.05)'
+                        }}>
+                        <div style={{
+                          height: '200px',
+                          background: book.image ? `url(${book.image}) center/cover no-repeat` : `linear-gradient(45deg, ${getRandomGradient()})`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontSize: '2.5rem',
+                          fontWeight: 'bold',
+                          textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
+                          position: 'relative',
+                          overflow: 'hidden'
+                        }}>
+                          {!book.image && (
+                            <div style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              background: 'rgba(0,0,0,0.2)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}>
+                              {book.title?.charAt(0)?.toUpperCase() || 'B'}
+                            </div>
+                          )}
+                        </div>
                         <div className="card-body">
                           <h5 className="card-title text-truncate">{book.title}</h5>
-                          <p className="card-text text-muted">by {book.author}</p>
+                          <h6 className="card-subtitle mb-2 text-muted">{book.author || 'Unknown Author'}</h6>
+                          <p className="card-text text-muted small" style={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            minHeight: '40px',
+                            marginBottom: '1rem'
+                          }}>
+                            {book.description || 'No description available.'}
+                          </p>
                           <div className="d-flex justify-content-between align-items-center">
                             <button 
                               className="btn btn-sm btn-outline-primary"
-                              onClick={() => navigate(`/books/${book._id}`)}
+                              onClick={() => navigate(`/book-details/${book._id}`)}
+                              style={{
+                                borderRadius: '20px',
+                                padding: '0.25rem 1rem',
+                                fontWeight: '500',
+                                transition: 'all 0.3s ease'
+                              }}
                             >
-                              <i className="bi bi-eye me-1"></i> View
+                              <i className="bi bi-eye me-1"></i> Details
                             </button>
+                            <motion.button
+                              className="btn btn-sm btn-danger position-relative overflow-hidden"
+                              onClick={() => removeFromFavorites(book._id)}
+                              style={{
+                                borderRadius: '20px',
+                                padding: '0.25rem 1rem',
+                                fontWeight: '500',
+                                transform: 'scale(1)',
+                                transformOrigin: 'center',
+                              }}
+                              whileTap={{ scale: 0.95 }}
+                              disabled={animatingFavorites[book._id]}
+                            >
+                              <div className="d-flex align-items-center">
+                                <AnimatePresence mode="wait">
+                                  <motion.span
+                                    key={animatingFavorites[book._id] ? 'removing' : 'remove'}
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.8, opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="me-1"
+                                  >
+                                    {animatingFavorites[book._id] ? '🗑️' : '❌'}
+                                  </motion.span>
+                                </AnimatePresence>
+                                {animatingFavorites[book._id] ? 'Removing...' : 'Remove'}
+                              </div>
+                            </motion.button>
+                          </div>
+                          <div className="mt-2">
                             <small className="text-muted">
-                              Added on {new Date(book.addedAt).toLocaleDateString()}
+                              Added on {new Date(book.addedAt || Date.now()).toLocaleDateString()}
                             </small>
                           </div>
                         </div>

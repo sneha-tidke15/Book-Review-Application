@@ -37,39 +37,24 @@ const Home = () => {
 
   const [animatingFavorites, setAnimatingFavorites] = useState({});
 
-  const addToFavorites = async (bookId) => {
-    if (!token) {
-      alert('Please log in to add favorites.');
-      navigate('/login');
-      return;
-    }
-
-    try {
-      // Start animation
-      setAnimatingFavorites(prev => ({ ...prev, [bookId]: true }));
-      
-      await axiosInstance.post(
-        '/api/users/favorites',
-        { bookId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
-      // Show success message with a nice animation
-      const successMessage = document.createElement('div');
-      successMessage.textContent = '✓ Added to favorites!';
-      successMessage.style.position = 'fixed';
-      successMessage.style.bottom = '20px';
-      successMessage.style.right = '20px';
-      successMessage.style.backgroundColor = '#4CAF50';
-      successMessage.style.color = 'white';
-      successMessage.style.padding = '12px 24px';
-      successMessage.style.borderRadius = '4px';
-      successMessage.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-      successMessage.style.zIndex = '1000';
-      successMessage.style.animation = 'slideIn 0.3s ease-out';
-      
-      // Add animation keyframes
+  const showNotification = (message, type = 'success') => {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.position = 'fixed';
+    notification.style.bottom = '20px';
+    notification.style.right = '20px';
+    notification.style.backgroundColor = type === 'success' ? '#4CAF50' : '#f44336';
+    notification.style.color = 'white';
+    notification.style.padding = '12px 24px';
+    notification.style.borderRadius = '4px';
+    notification.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    notification.style.zIndex = '1000';
+    notification.style.animation = 'slideIn 0.3s ease-out';
+    
+    // Add animation keyframes if not already present
+    if (!document.getElementById('notification-styles')) {
       const style = document.createElement('style');
+      style.id = 'notification-styles';
       style.textContent = `
         @keyframes slideIn {
           from { transform: translateX(100%); opacity: 0; }
@@ -81,37 +66,75 @@ const Home = () => {
         }
       `;
       document.head.appendChild(style);
-      
-      document.body.appendChild(successMessage);
-      
-      // Remove message after animation
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Remove message after animation
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.3s ease-out';
       setTimeout(() => {
-        successMessage.style.animation = 'slideOut 0.3s ease-out';
-        setTimeout(() => {
-          document.body.removeChild(successMessage);
-          document.head.removeChild(style);
-        }, 300);
-      }, 2000);
+        if (document.body.contains(notification)) {
+          document.body.removeChild(notification);
+        }
+      }, 300);
+    }, 3000);
+  };
+
+  const addToFavorites = async (bookId) => {
+    if (!token) {
+      showNotification('Please log in to add favorites', 'error');
+      navigate('/login');
+      return;
+    }
+
+    // Check if already animating to prevent multiple clicks
+    if (animatingFavorites[bookId]) {
+      return;
+    }
+
+    try {
+      // Start animation
+      setAnimatingFavorites(prev => ({ ...prev, [bookId]: true }));
+      
+      const response = await axiosInstance.post(
+        '/api/users/favorites',
+        { bookId },
+        { 
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}` 
+          },
+          validateStatus: (status) => status < 500 // Don't throw for 400 status
+        }
+      );
+      
+      if (response.status === 200) {
+        showNotification('✓ Added to favorites!');
+      } else if (response.status === 400 && response.data.message?.includes('already in favorites')) {
+        showNotification('This book is already in your favorites', 'info');
+      } else {
+        throw new Error(response.data.message || 'Failed to add to favorites');
+      }
       
     } catch (err) {
       console.error('❌ Failed to add favorite:', err);
+      
       if (err.response) {
-        // The request was made and the server responded with a status code
-        console.error('Error response data:', err.response.data);
-        console.error('Error status:', err.response.status);
-        console.error('Error headers:', err.response.headers);
-        alert(`Failed to add favorite: ${err.response.data.message || 'Unknown error'}`);
+        if (err.response.status === 400) {
+          showNotification('This book is already in your favorites', 'info');
+        } else {
+          showNotification(err.response.data?.message || 'Failed to add to favorites', 'error');
+        }
       } else if (err.request) {
-        // The request was made but no response was received
         console.error('No response received:', err.request);
-        alert('No response from server. Please check your connection.');
+        showNotification('No response from server. Please check your connection.', 'error');
       } else {
-        // Something happened in setting up the request
         console.error('Request setup error:', err.message);
-        alert('Error setting up request: ' + err.message);
+        showNotification(err.message || 'Error setting up request. Please try again.', 'error');
       }
     } finally {
-      // Reset animation
+      // Reset animation with a delay to show feedback
       setTimeout(() => {
         setAnimatingFavorites(prev => ({ ...prev, [bookId]: false }));
       }, 1000);
@@ -119,7 +142,7 @@ const Home = () => {
   };
 
   const viewDetails = (bookId) => {
-    navigate(`/books/${bookId}`);
+    navigate(`/book-details/${bookId}`);
   };
 
   return (
@@ -188,16 +211,32 @@ const Home = () => {
               >
                 <div style={{
                   height: '200px',
-                  background: `linear-gradient(45deg, ${getRandomGradient()})`,
+                  background: book.image ? `url(${book.image}) center/cover no-repeat` : `linear-gradient(45deg, ${getRandomGradient()})`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: 'white',
                   fontSize: '2.5rem',
                   fontWeight: 'bold',
-                  textShadow: '2px 2px 4px rgba(0,0,0,0.2)'
+                  textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
+                  position: 'relative',
+                  overflow: 'hidden'
                 }}>
-                  {book.title.charAt(0).toUpperCase()}
+                  {!book.image && (
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'rgba(0,0,0,0.2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      {book.title.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </div>
                 <div className="card-body">
                   <h5 className="card-title text-truncate">{book.title}</h5>
@@ -216,7 +255,7 @@ const Home = () => {
                   <div className="d-flex justify-content-between align-items-center">
                     <button
                       className="btn btn-sm btn-outline-primary"
-                      onClick={() => navigate(`/books/${book._id}`)}
+                      onClick={() => navigate(`/book-details/${book._id}`)}
                       style={{
                         borderRadius: '20px',
                         padding: '0.25rem 1rem',

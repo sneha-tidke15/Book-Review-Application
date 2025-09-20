@@ -49,6 +49,11 @@ const Navigation = () => {
         >
           <span style={{
             color: "#4a90e2",
+            fontSize: "1.5rem",
+            verticalAlign: "middle"
+          }}>📚</span>
+          <span style={{
+            color: "#4a90e2",
             fontWeight: "800"
           }}>Book</span><span style={{ color: '#ffffff' }}>Review</span>
           <span style={{

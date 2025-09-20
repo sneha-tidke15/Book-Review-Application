@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { FiUser, FiMail, FiLock, FiArrowRight, FiCheck } from 'react-icons/fi';
 import confetti from 'canvas-confetti';
 
 // Success Popup Component
 const SuccessPopup = ({ onClose }) => {
-  // Confetti effect on mount
   useEffect(() => {
     const timer = setTimeout(() => {
       confetti({
@@ -22,252 +22,288 @@ const SuccessPopup = ({ onClose }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-      animate={{ opacity: 1, backdropFilter: 'blur(4px)' }}
-      exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-      transition={{ duration: 0.3 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
       style={{ 
         backgroundColor: 'rgba(0,0,0,0.7)', 
         zIndex: 1050,
-        fontFamily: '"Poppins", sans-serif'
+        backdropFilter: 'blur(4px)'
       }}
     >
       <motion.div 
         className="bg-white p-5 rounded-4 text-center position-relative overflow-hidden"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ 
-          scale: 1, 
-          opacity: 1,
-          boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
-        }}
-        transition={{
-          type: 'spring',
-          stiffness: 300,
-          damping: 25,
-          duration: 0.5
-        }}
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         style={{
           maxWidth: '400px',
           width: '90%',
-          border: '1px solid rgba(0,0,0,0.1)'
+          boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
         }}
       >
-        {/* Animated Checkmark */}
-        <motion.div 
-          className="position-relative mx-auto mb-4"
-          style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 20px',
-            boxShadow: '0 4px 15px rgba(76, 175, 80, 0.3)'
-          }}
-          initial={{ scale: 0 }}
-          animate={{ 
-            scale: 1,
-            rotate: [0, 10, -10, 5, -5, 0],
-          }}
-          transition={{ 
-            scale: { duration: 0.5, type: 'spring' },
-            rotate: { duration: 0.8, delay: 0.3 }
-          }}
-        >
-          <motion.svg 
-            width="40" 
-            height="40" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="white" 
-            strokeWidth="3" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-          >
-            <motion.polyline points="20 6 9 17 4 12" />
-          </motion.svg>
-        </motion.div>
+        <div className="d-flex justify-content-center mb-4">
+          <div className="bg-success bg-opacity-10 rounded-circle p-3">
+            <FiCheck className="text-success" size={40} />
+          </div>
+        </div>
         
-        <motion.h4 
-          className="mb-3 fw-bold"
-          style={{ color: '#2E7D32', fontSize: '1.5rem' }}
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          Welcome Aboard! 🎉
-        </motion.h4>
+        <h4 className="fw-bold text-success mb-3">Registration Successful!</h4>
+        <p className="text-muted mb-4">
+          Thank you for joining BookReview! You can now sign in to your account.
+        </p>
         
-        <motion.p 
-          className="mb-4 text-muted"
-          initial={{ y: 10, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-        >
-          Your account has been created successfully. Get ready to explore amazing books and share your thoughts!
-        </motion.p>
-        
-        <motion.button 
+        <button 
           onClick={onClose}
-          className="btn btn-lg w-100 py-2 fw-semibold"
-          style={{
-            background: 'linear-gradient(45deg, #4CAF50, #8BC34A)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '50px',
-            boxShadow: '0 4px 15px rgba(76, 175, 80, 0.3)',
-            position: 'relative',
-            overflow: 'hidden',
-            transition: 'all 0.3s ease'
-          }}
-          whileHover={{ 
-            scale: 1.03,
-            boxShadow: '0 6px 20px rgba(76, 175, 80, 0.4)'
-          }}
-          whileTap={{ scale: 0.98 }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          className="btn btn-primary px-4 py-2 rounded-pill"
         >
-          Start Exploring
-          <motion.span 
-            className="position-absolute"
-            style={{
-              top: '50%',
-              right: '15px',
-              transform: 'translateY(-50%)',
-              transition: 'transform 0.3s ease'
-            }}
-            animate={{ x: [0, 5, 0] }}
-            transition={{ 
-              repeat: Infinity, 
-              duration: 1.5,
-              delay: 1
-            }}
-          >
-            →
-          </motion.span>
-        </motion.button>
-        
-        {/* Decorative elements */}
-        <motion.div 
-          className="position-absolute"
-          style={{
-            top: '-20px',
-            right: '-20px',
-            width: '100px',
-            height: '100px',
-            borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
-            background: 'linear-gradient(45deg, rgba(76, 175, 80, 0.1), rgba(139, 195, 74, 0.1))',
-            zIndex: -1
-          }}
-          animate={{
-            transform: ['rotate(0deg)', 'rotate(360deg)']
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: 'linear'
-          }}
-        />
+          Continue to Login
+        </button>
       </motion.div>
     </motion.div>
   );
 };
 
 const Register = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (error) setError('');
+  };
+
+  const validateForm = () => {
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return false;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return false;
+    }
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    setError('');
+
     try {
-      const res = await axiosInstance.post('/api/auth/register', formData);
-      localStorage.setItem('token', res.data.token);
-      setShowSuccess(true);
+      const { confirmPassword, ...userData } = formData;
+      await axiosInstance.post('/api/auth/register', userData);
+      setIsSuccess(true);
       
-      // Auto-navigate after 3 seconds if user doesn't click the button
-      const timer = setTimeout(() => {
-        navigate('/');
-      }, 3000);
+      // Trigger confetti
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B']
+      });
       
-      return () => clearTimeout(timer);
     } catch (err) {
       console.error('Registration failed:', err);
-      alert('Registration failed. Please try again.');
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  const handleSuccessClose = () => {
-    setShowSuccess(false);
-    navigate('/');
+
+  const handleCloseSuccess = () => {
+    setIsSuccess(false);
+    navigate('/login');
   };
 
   return (
-    <div className="container mt-5">
-      <AnimatePresence>
-        {showSuccess && <SuccessPopup onClose={handleSuccessClose} />}
-      </AnimatePresence>
-      <div className="row justify-content-center">
-        <div className="col-md-6">
-          <div className="card p-4 shadow">
-            <h3 className="text-center mb-4 text-success">Register</h3>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label htmlFor="name" className="form-label">Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  id="name"
-                  className="form-control"
-                  placeholder="Enter your name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
+    <div className="min-vh-100 d-flex align-items-center bg-light">
+      <div className="container">
+        <div className="row justify-content-center">
+          <div className="col-md-8 col-lg-6">
+            <motion.div 
+              className="card border-0 shadow-lg rounded-4 overflow-hidden"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="row g-0">
+                {/* Left Side - Form */}
+                <div className="col-lg-6 p-5">
+                  <div className="text-center mb-5">
+                    <h2 className="fw-bold text-primary">Create Account</h2>
+                    <p className="text-muted">Join our community of book lovers</p>
+                  </div>
+
+                  {error && (
+                    <div className="alert alert-danger" role="alert">
+                      {error}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                      <label htmlFor="name" className="form-label fw-medium text-muted mb-2">
+                        Full Name
+                      </label>
+                      <div className="input-group">
+                        <span className="input-group-text bg-light border-end-0">
+                          <FiUser className="text-muted" />
+                        </span>
+                        <input
+                          type="text"
+                          name="name"
+                          id="name"
+                          className="form-control border-start-0 ps-2"
+                          placeholder="John Doe"
+                          value={formData.name}
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mb-3">
+                      <label htmlFor="email" className="form-label fw-medium text-muted mb-2">
+                        Email Address
+                      </label>
+                      <div className="input-group">
+                        <span className="input-group-text bg-light border-end-0">
+                          <FiMail className="text-muted" />
+                        </span>
+                        <input
+                          type="email"
+                          name="email"
+                          id="email"
+                          className="form-control border-start-0 ps-2"
+                          placeholder="your@email.com"
+                          value={formData.email}
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mb-3">
+                      <label htmlFor="password" className="form-label fw-medium text-muted mb-2">
+                        Password
+                      </label>
+                      <div className="input-group">
+                        <span className="input-group-text bg-light border-end-0">
+                          <FiLock className="text-muted" />
+                        </span>
+                        <input
+                          type="password"
+                          name="password"
+                          id="password"
+                          className="form-control border-start-0 ps-2"
+                          placeholder="••••••••"
+                          value={formData.password}
+                          onChange={handleChange}
+                          required
+                          minLength="6"
+                        />
+                      </div>
+                      <div className="form-text text-muted small">Must be at least 6 characters</div>
+                    </div>
+
+                    <div className="mb-4">
+                      <label htmlFor="confirmPassword" className="form-label fw-medium text-muted mb-2">
+                        Confirm Password
+                      </label>
+                      <div className="input-group">
+                        <span className="input-group-text bg-light border-end-0">
+                          <FiLock className="text-muted" />
+                        </span>
+                        <input
+                          type="password"
+                          name="confirmPassword"
+                          id="confirmPassword"
+                          className="form-control border-start-0 ps-2"
+                          placeholder="••••••••"
+                          value={formData.confirmPassword}
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="d-grid gap-2">
+                      <motion.button
+                        type="submit"
+                        className="btn btn-primary btn-lg rounded-pill fw-medium"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <div className="spinner-border spinner-border-sm me-2" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                          </div>
+                        ) : (
+                          <>
+                            Create Account <FiArrowRight className="ms-2" />
+                          </>
+                        )}
+                      </motion.button>
+                    </div>
+                  </form>
+
+                  <div className="text-center mt-4">
+                    <p className="text-muted mb-0">
+                      Already have an account?{' '}
+                      <Link to="/login" className="text-primary text-decoration-none fw-medium">
+                        Sign in
+                      </Link>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right Side - Image */}
+                <div className="col-lg-6 d-none d-lg-block bg-primary bg-opacity-10 p-0 position-relative">
+                  <div className="h-100 d-flex flex-column justify-content-center p-5 text-center">
+                    <h3 className="text-primary mb-4">Join Our Community</h3>
+                    <p className="text-muted mb-4">
+                      Share your thoughts, discover new books, and connect with fellow readers.
+                    </p>
+                    <div className="d-flex justify-content-center gap-3">
+                      <div className="bg-white p-2 rounded-circle shadow-sm">
+                        <div className="d-flex align-items-center justify-content-center rounded-3 bg-light" style={{width: '50px', height: '50px'}}>
+                          <span className="text-muted">📚</span>
+                        </div>
+                      </div>
+                      <div className="bg-white p-2 rounded-circle shadow-sm">
+                        <div className="d-flex align-items-center justify-content-center rounded-3 bg-light" style={{width: '50px', height: '50px'}}>
+                          <span className="text-muted">📖</span>
+                        </div>
+                      </div>
+                      <div className="bg-white p-2 rounded-circle shadow-sm">
+                        <div className="d-flex align-items-center justify-content-center rounded-3 bg-light" style={{width: '50px', height: '50px'}}>
+                          <span className="text-muted">📕</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="mb-3">
-                <label htmlFor="email" className="form-label">Email address</label>
-                <input
-                  type="email"
-                  name="email"
-                  id="email"
-                  className="form-control"
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="password" className="form-label">Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  id="password"
-                  className="form-control"
-                  placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <button type="submit" className="btn btn-success w-100">Register</button>
-            </form>
+            </motion.div>
           </div>
         </div>
       </div>
+      
+      {isSuccess && <SuccessPopup onClose={handleCloseSuccess} />}
     </div>
   );
 };
